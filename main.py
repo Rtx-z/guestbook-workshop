@@ -1,39 +1,14 @@
-from contextlib import asynccontextmanager
-
 import psycopg
 from fastapi import FastAPI
-from pydantic import BaseModel
 
-# ⚠️ Пока всё зашито прямо в код — это и предстоит исправить.
-DATABASE_URL = "postgresql://guestbook:supersecret123@localhost:5432/guestbook"
-GREETING = "Добро пожаловать в гостевую книгу!"
+from config import settings
 
-
-def connect():
-    return psycopg.connect(DATABASE_URL)
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    with connect() as conn:
-        conn.execute(
-            "CREATE TABLE IF NOT EXISTS messages ("
-            "id SERIAL PRIMARY KEY, author TEXT, text TEXT)"
-        )
-    yield
-
-
-app = FastAPI(lifespan=lifespan)
-
-
-class Message(BaseModel):
-    author: str
-    text: str
+app = FastAPI()
 
 
 @app.get("/")
-def index():
-    return {"message": GREETING}
+def root():
+    return {"message": "guestbook"}
 
 
 @app.get("/health")
@@ -43,18 +18,27 @@ def health():
 
 @app.get("/messages")
 def list_messages():
-    with connect() as conn:
-        rows = conn.execute(
-            "SELECT author, text FROM messages ORDER BY id DESC"
-        ).fetchall()
-    return [{"author": author, "text": text} for author, text in rows]
+    with psycopg.connect(settings.database_url) as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT id, author, text, created_at "
+                "FROM messages ORDER BY created_at DESC"
+            )
+            rows = cur.fetchall()
+    return [
+        {"id": r[0], "author": r[1], "text": r[2], "created_at": r[3]}
+        for r in rows
+    ]
 
 
 @app.post("/messages")
-def add_message(message: Message):
-    with connect() as conn:
-        conn.execute(
-            "INSERT INTO messages (author, text) VALUES (%s, %s)",
-            (message.author, message.text),
-        )
-    return {"ok": True}
+def add_message(payload: dict):
+    with psycopg.connect(settings.database_url) as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "INSERT INTO messages (author, text) VALUES (%s, %s) RETURNING id",
+                (payload["author"], payload["text"]),
+            )
+            new_id = cur.fetchone()[0]
+        conn.commit()
+    return {"id": new_id}
