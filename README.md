@@ -72,7 +72,12 @@ git merge to-prod
 git push -u origin main
 ```
 
-docker compose up
+<!-- docker compose up
 docker --build .
 docker compose ps
 docker compose logs app
+
+
+http://localhost:8000/health
+http://localhost:8000/
+http://localhost:8000/docs -->
