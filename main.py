@@ -18,13 +18,12 @@ def health():
 
 @app.get("/messages")
 def list_messages():
-    with psycopg.connect(settings.database_url) as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "SELECT id, author, text, created_at "
-                "FROM messages ORDER BY created_at DESC"
-            )
-            rows = cur.fetchall()
+    with psycopg.connect(settings.database_url) as conn, conn.cursor() as cur:
+        cur.execute(
+            "SELECT id, author, text, created_at "
+            "FROM messages ORDER BY created_at DESC"
+        )
+        rows = cur.fetchall()
     return [
         {"id": r[0], "author": r[1], "text": r[2], "created_at": r[3]}
         for r in rows
