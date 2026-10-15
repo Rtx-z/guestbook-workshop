@@ -5,15 +5,14 @@ description = "workshop"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = [
-    "fastapi>=0.115,<0.116",
-    "uvicorn[standard]>=0.30,<0.31",
-    "psycopg[binary]>=3.2,<3.3",
-    "pydantic-settings>=2.4,<3",
+    "fastapi>=0.143.1",
+    "psycopg>=3.3.6",
+    "pydantic-settings>=2.16.0",
+    "uvicorn>=0.54.0",
 ]
 
 [dependency-groups]
 dev = [
-    "httpx>=0.28.1",
     "httpx2>=2.13.1",
     "pytest>=9.1.1",
     "ruff>=0.16.10",

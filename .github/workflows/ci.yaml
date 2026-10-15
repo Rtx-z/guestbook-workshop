@@ -22,6 +22,3 @@ jobs:
 
       - name: Тесты (pytest)
         run: uv run pytest
-        env:
-          GREETING: "ci"
-          DATABASE_URL: "postgresql://ci:ci@localhost:5432/ci"
